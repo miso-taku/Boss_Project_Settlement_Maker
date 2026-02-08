@@ -63,9 +63,29 @@ class ReplyDraft:
         return self.text
 
 
+# チェック合格に必要な最小スコア（各項目10点満点）
+CHECK_PASS_THRESHOLD = 8
+
+
 @dataclass(frozen=True)
 class CheckResult:
-    """返信案チェック結果（OK/NG と指摘・改善点）。"""
+    """返信案チェック結果（3項目を10点満点で評価、全て8以上で合格）。"""
 
-    ok: bool  # True: 合格, False: 要修正
+    score_1: int  # 角の立たなさ 0-10
+    score_2: int  # 代替案・確認質問の適切さ 0-10
+    score_3: int  # 依頼文・制約準拠 0-10
     feedback: str  # 指摘・改善点（NG 時）。OK の場合は空文字可
+
+    def __post_init__(self) -> None:
+        for i, s in enumerate((self.score_1, self.score_2, self.score_3), 1):
+            if not (0 <= s <= 10):
+                raise ValueError(f"score_{i} は0〜10の範囲で指定してください")
+
+    @property
+    def ok(self) -> bool:
+        """全項目が CHECK_PASS_THRESHOLD 以上なら True。"""
+        return (
+            self.score_1 >= CHECK_PASS_THRESHOLD
+            and self.score_2 >= CHECK_PASS_THRESHOLD
+            and self.score_3 >= CHECK_PASS_THRESHOLD
+        )

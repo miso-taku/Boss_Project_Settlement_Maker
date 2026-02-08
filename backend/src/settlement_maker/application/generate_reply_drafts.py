@@ -53,8 +53,6 @@ def generate_reply_drafts(
         check_result = check_port.check(drafts, request_text, my_situation)
         if check_result.ok:
             return drafts
-        drafts = revise_port.revise(
-            drafts, check_result, request_text, my_situation
-        )
+        drafts = revise_port.revise(drafts, check_result, request_text, my_situation)
 
     return drafts
