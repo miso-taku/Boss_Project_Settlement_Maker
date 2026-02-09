@@ -131,3 +131,18 @@ def test_post_reply_drafts_missing_request_text_returns_422(client_with_mock_por
         json={},
     )
     assert response.status_code == 422
+
+
+def test_options_reply_drafts_returns_200(client_with_mock_ports):
+    """CORS プリフライトリクエスト（OPTIONS）が 200 で返る。"""
+    response = client_with_mock_ports.options(
+        "/api/v1/reply-drafts",
+        headers={
+            "Origin": "http://localhost:3000",
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "Content-Type",
+        },
+    )
+    assert response.status_code == 200
+    assert "access-control-allow-origin" in response.headers
+    assert response.headers["access-control-allow-origin"] == "http://localhost:3000"

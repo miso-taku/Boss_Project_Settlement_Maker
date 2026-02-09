@@ -58,6 +58,7 @@ class PydanticAIGenerateAdapter(GenerateReplyDraftsPort):
                 "依頼文と自分の状況（残り時間・優先度・制約）に基づき、"
                 "角の立たない断り・代替案・確認質問・次の一手を1件の返信案として返してください。"
                 "返信案は丁寧で実用的な文にし、制約に反しないようにしてください。"
+                "返信案は200文字程度で生成してください。"
                 "出力は必ず drafts に返信案1件のリスト（各要素は text）を含む JSON 形式にすること。"
                 "",
             ),
@@ -77,6 +78,8 @@ class PydanticAIGenerateAdapter(GenerateReplyDraftsPort):
         )
         result = self._agent.run_sync(user_prompt)
         output: ReplyDraftsOutput = result.output
+        print(f"generate output: {output}")
+        print(f"generate output.drafts: {output.drafts}")
         return [ReplyDraft(text=d.text) for d in output.drafts]
 
 
@@ -119,6 +122,11 @@ class PydanticAICheckAdapter(CheckReplyDraftsPort):
         )
         result = self._agent.run_sync(user_prompt)
         output: CheckResultSchema = result.output
+        print(f"check output: {output}")
+        print(f"check output.score_1: {output.score_1}")
+        print(f"check output.score_2: {output.score_2}")
+        print(f"check output.score_3: {output.score_3}")
+        print(f"check output.feedback: {output.feedback}")
         return CheckResult(
             score_1=output.score_1,
             score_2=output.score_2,
@@ -165,4 +173,6 @@ class PydanticAIReviseAdapter(ReviseReplyDraftsPort):
         )
         result = self._agent.run_sync(user_prompt)
         output: ReplyDraftsOutput = result.output
+        print(f"revise output: {output}")
+        print(f"revise output.drafts: {output.drafts}")
         return [ReplyDraft(text=d.text) for d in output.drafts]

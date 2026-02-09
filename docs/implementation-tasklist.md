@@ -10,10 +10,10 @@
 | 項目 | 数 |
 |------|-----|
 | **総タスク数** | 26 |
-| **完了** | 12 |
+| **完了** | 19 |
 | **進行中** | 0 |
-| **未着手** | 14 |
-| **進捗率** | 46% (12/26) |
+| **未着手** | 7 |
+| **進捗率** | 73% (19/26) |
 
 ### セクション別進捗
 
@@ -21,12 +21,12 @@
 |------------|------|--------|--------|------|--------|
 | 1. ドキュメント整備 | 2 | 0 | 0 | 2 | 100% |
 | 2. バックエンド | 7 | 0 | 1 | 8 | 88% |
-| 3. フロントエンド | 0 | 0 | 7 | 7 | 0% |
+| 3. フロントエンド | 7 | 0 | 0 | 7 | 100% |
 | 4. 結合・統合 | 0 | 0 | 2 | 2 | 0% |
 | 5. 振り返り・ドキュメント最終更新 | 0 | 0 | 2 | 2 | 0% |
 | 6. 仕様変更 | 2 | 0 | 0 | 2 | 100% |
 
-*最終更新: 2025-02-08（S2 完了）。タスク完了・ステータス変更のたびに上記数値を更新すること。*
+*最終更新: 2026-02-09（F7 完了）。タスク完了・ステータス変更のたびに上記数値を更新すること。*
 
 ---
 
@@ -58,13 +58,13 @@
 
 | # | タスク | ステータス | 完了日 | 備考 |
 |---|--------|------------|--------|------|
-| F1 | プロジェクト初期化（create-next-app 等、App Router を選択） | 未着手 | — | |
-| F2 | API クライアント（返信案生成 API 呼び出し） | 未着手 | — | |
-| F3 | 入力フォーム（依頼文・残り時間・優先度・制約） | 未着手 | — | |
-| F4 | 生成実行・返信案表示（1件）・コピー | 未着手 | — | |
-| F5 | エラーハンドリング・ローディング表示 | 未着手 | — | |
-| F6 | コンポーネント / 統合テスト | 未着手 | — | |
-| F7 | lint/format | 未着手 | — | |
+| F1 | プロジェクト初期化（create-next-app 等、App Router を選択） | 完了 | 2026-02-09 | frontend/ ディレクトリ配下に Next.js プロジェクトを手動で作成。App Router、TypeScript、ESLint を設定。package.json、tsconfig.json、next.config.ts、.eslintrc.json を作成。src/app/、src/api/、src/components/、src/hooks/、public/ ディレクトリを作成。 |
+| F2 | API クライアント（返信案生成 API 呼び出し） | 完了 | 2026-02-09 | frontend/src/api/types.ts（型定義）、frontend/src/api/replyDrafts.ts（APIクライアント関数）、frontend/src/api/__tests__/replyDrafts.test.ts（ユニットテスト）、frontend/.env.local.example（環境変数設定例）、frontend/README.md 更新。fetch API を使用し、環境変数 NEXT_PUBLIC_API_BASE_URL でベースURLを設定可能（デフォルト: http://localhost:8000）。 |
+| F3 | 入力フォーム（依頼文・残り時間・優先度・制約） | 完了 | 2026-02-09 | frontend/src/components/ReplyForm.tsx（フォームコンポーネント）、frontend/src/components/__tests__/ReplyForm.test.tsx（テストファイル）、frontend/src/app/page.tsx に統合。依頼文（テキストエリア・必須）、残り時間（数値入力・任意）、優先度（ラジオボタン・3段階・任意）、制約（テキストエリア・任意）を実装。React state（useState）で状態管理。 |
+| F4 | 生成実行・返信案表示（1件）・コピー | 完了 | 2026-02-09 | frontend/src/components/ReplyForm.tsx を更新（生成実行ボタン・API呼び出し・返信案表示・コピー機能を追加）、frontend/src/components/__tests__/ReplyForm.test.tsx を更新（生成実行・返信案表示・コピー機能のテストを追加）。生成実行ボタンでフォームの入力値を取得してAPIを呼び出し、返信案1件を表示。コピーボタンで navigator.clipboard.writeText() を使用してクリップボードにコピー。コピー成功時にフィードバック（ボタン表示変更）を表示。ローディング状態・エラー状態を管理。 |
+| F5 | エラーハンドリング・ローディング表示 | 完了 | 2026-02-09 | frontend/src/api/types.ts にエラー型（ApiError, ErrorType）を追加。frontend/src/api/replyDrafts.ts を更新（HTTPステータスコード別のエラー処理・ネットワークエラー処理・エラーレスポンスの詳細情報取得を実装）。frontend/src/components/LoadingSpinner.tsx を新規作成（CSS アニメーションでスピナーを実装）。frontend/src/components/ReplyForm.tsx を更新（エラー表示の改善・ローディング表示の改善・スピナーの統合）。frontend/src/app/globals.css にスピナーアニメーションを追加。frontend/src/api/__tests__/replyDrafts.test.ts を更新（HTTPエラー・ネットワークエラーのテストを追加）。frontend/src/components/__tests__/ReplyForm.test.tsx を更新（ローディング表示・エラー表示のテストを追加）。 |
+| F6 | コンポーネント / 統合テスト | 完了 | 2026-02-09 | frontend/jest.config.ts（Jest設定）、frontend/jest.setup.ts（テストセットアップ）、frontend/package.json にテスト関連の依存関係とtestスクリプトを追加。frontend/src/components/__tests__/LoadingSpinner.test.tsx を新規作成（スピナーの表示・アクセシビリティ属性のテスト）。frontend/src/app/__tests__/page.test.tsx を新規作成（ページのレンダリング・ReplyForm統合のテスト）。frontend/README.md にテスト実行方法を追記。Jest + React Testing Library + Next.js（next/jest）を使用。 |
+| F7 | lint/format | 完了 | 2026-02-09 | Prettier導入・設定完了（`.prettierrc`, `.prettierignore`作成、`package.json`にprettier/eslint-config-prettier追加、format/format:check/type-checkスクリプト追加）。ESLint実行: ✔ No ESLint warnings or errors。TypeScript型チェック: 通過（`npx tsc --noEmit`）。npm install実行後、`npm run format`でフォーマット適用可能。 |
 
 ---
 
@@ -97,6 +97,13 @@
 
 ## 更新履歴
 
+- 2026-02-09: F7 完了（lint/format）。Prettier導入・設定完了（`.prettierrc`, `.prettierignore`作成、`package.json`にprettier/eslint-config-prettier追加、format/format:check/type-checkスクリプト追加）。ESLint実行: ✔ No ESLint warnings or errors。TypeScript型チェック: 通過（`npx tsc --noEmit`）。npm install実行後、`npm run format`でフォーマット適用可能。実装サマリー・セクション別進捗を更新。
+- 2026-02-09: F6 完了（コンポーネント / 統合テスト）。frontend/jest.config.ts（Jest設定、Next.js標準のnext/jestを使用）、frontend/jest.setup.ts（@testing-library/jest-domのセットアップ）を新規作成。frontend/package.json にテスト関連の依存関係（jest, jest-environment-jsdom, @testing-library/react, @testing-library/jest-dom, @testing-library/user-event, @types/jest, ts-node）とtest/test:watchスクリプトを追加。frontend/src/components/__tests__/LoadingSpinner.test.tsx を新規作成（スピナーの表示・アクセシビリティ属性のテスト）。frontend/src/app/__tests__/page.test.tsx を新規作成（ページのレンダリング・ReplyForm統合のテスト）。frontend/README.md にテスト実行方法・テスト環境・テストファイル配置・テストカバレッジを追記。実装サマリー・セクション別進捗を更新。
+- 2026-02-09: F5 完了（エラーハンドリング・ローディング表示の改善）。frontend/src/api/types.ts にエラー型（ApiError, ErrorType）を追加。frontend/src/api/replyDrafts.ts を更新（HTTPステータスコード別のエラー処理・ネットワークエラー処理・エラーレスポンスの詳細情報取得を実装、ApiErrorException クラスを追加）。frontend/src/components/LoadingSpinner.tsx を新規作成（CSS アニメーションでスピナーを実装）。frontend/src/components/ReplyForm.tsx を更新（エラー表示の改善・ローディング表示の改善・スピナーの統合、ApiError 型を使用したエラー状態管理）。frontend/src/app/globals.css にスピナーアニメーション（spin）を追加。frontend/src/api/__tests__/replyDrafts.test.ts を更新（HTTPエラー・ネットワークエラー・バリデーションエラー（配列形式）のテストを追加）。frontend/src/components/__tests__/ReplyForm.test.tsx を更新（ローディング表示・エラー表示のテストを追加）。実装サマリー・セクション別進捗を更新。
+- 2026-02-09: F4 完了（生成実行・返信案表示・コピー機能実装）。frontend/src/components/ReplyForm.tsx を更新（生成実行ボタン・API呼び出し・返信案表示・コピー機能を追加）。生成実行ボタンでフォームの入力値を取得してAPI（generateReplyDrafts）を呼び出し、返信案1件を表示。コピーボタンで navigator.clipboard.writeText() を使用してクリップボードにコピー。コピー成功時にフィードバック（ボタン表示変更）を表示。ローディング状態・エラー状態を管理。frontend/src/components/__tests__/ReplyForm.test.tsx を更新（生成実行・返信案表示・コピー機能のテストを追加）。実装サマリー・セクション別進捗を更新。
+- 2026-02-09: F3 完了（入力フォーム実装）。frontend/src/components/ReplyForm.tsx にフォームコンポーネントを実装（依頼文・残り時間・優先度・制約の入力フィールド）。frontend/src/components/__tests__/ReplyForm.test.tsx にテストファイルを作成（F6 でテスト設定追加後に実行予定）。frontend/src/app/page.tsx にフォームを統合。React state（useState）で状態管理。実装サマリー・セクション別進捗を更新。
+- 2026-02-09: F2 完了（API クライアント実装）。frontend/src/api/types.ts に TypeScript 型定義（GenerateReplyDraftsRequest, ReplyDraftItem, GenerateReplyDraftsResponse, Priority）を追加。frontend/src/api/replyDrafts.ts に generateReplyDrafts 関数を実装（fetch API 使用、環境変数 NEXT_PUBLIC_API_BASE_URL でベースURL設定可能、デフォルト: http://localhost:8000）。frontend/src/api/__tests__/replyDrafts.test.ts にユニットテストを追加（正常系・異常系）。frontend/.env.local.example を作成。frontend/README.md に環境変数設定方法を追記。実装サマリー・セクション別進捗を更新。
+- 2026-02-09: F1 完了（Next.jsプロジェクト初期化）。frontend/ ディレクトリ配下に Next.js 15.1.6 プロジェクトを手動で作成。App Router、TypeScript、ESLint を設定。package.json、tsconfig.json、next.config.ts、.eslintrc.json、.gitignore、next-env.d.ts を作成。src/app/（layout.tsx、page.tsx、globals.css）、src/api/、src/components/、src/hooks/、public/ ディレクトリを作成。実装サマリー・セクション別進捗を更新。
 - 2025-02-08: S2 完了（返信案チェックを10点満点×3項目・全て8以上でOKに変更）。Domain CheckResult を score_1/2/3, feedback に変更、ok はプロパティ。CheckResultSchema・PydanticAICheckAdapter のプロンプト修正。architecture, functional-design, glossary を更新。uv run pytest -q で 26 テスト通過。実装サマリー・セクション6進捗を更新。
 - 2025-02-08: S1 完了（返信案を1案に絞る）。product-requirements, functional-design, architecture, glossary を「1案」に修正。pydantic_ai_adapters.py のプロンプトを1件生成に変更。統合・単体テストを1件期待に修正。uv run pytest -q で 23 テスト通過。実装サマリー・セクション6進捗を更新。
 - 2025-02-08: B8 完了（lint/format）。backend で uv run ruff check . / ruff format . / mypy . を実行し、いずれも通過（ruff: All checks passed、ruff format: 23 files、mypy: 23 source files Success）。pyproject.toml の既存 [tool.ruff] / [tool.mypy] 設定のまま。uv run pytest -q で 23 テスト通過を確認。実装サマリー・セクション別進捗を更新。

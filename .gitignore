@@ -206,5 +206,24 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
+# Frontend (Next.js)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.vercel
+frontend/.env*.local
+frontend/.DS_Store
+frontend/*.tsbuildinfo
+frontend/next-env.d.ts
+frontend/.turbo
+frontend/.pnp
+frontend/.pnp.js
+frontend/.yarn/install-state.gz
+frontend/coverage/
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/*.pem
 
 memo.txt
