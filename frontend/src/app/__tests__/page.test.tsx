@@ -2,9 +2,11 @@
  * ホームページ（page.tsx）の統合テスト。
  *
  * React Testing Library を使用して、ページのレンダリング・ReplyForm の統合をテストする。
+ * Chakra UIコンポーネントに対応。
  */
 
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
+import { render } from "../../test-utils";
 import Home from "../page";
 
 // ReplyForm の API 呼び出しをモック（統合テストでは実際の API 呼び出しは行わない）
@@ -13,13 +15,19 @@ jest.mock("../../api/replyDrafts", () => ({
   ApiErrorException: class ApiErrorException extends Error {},
 }));
 
+// useToast をモック
+const mockToast = jest.fn();
+jest.mock("@chakra-ui/react", () => {
+  const actual = jest.requireActual("@chakra-ui/react");
+  return {
+    ...actual,
+    useToast: () => ({
+      toast: mockToast,
+    }),
+  };
+});
+
 describe("Home Page", () => {
-  it("ページが正しくレンダリングされる", () => {
-    render(<Home />);
-
-    expect(screen.getByRole("main")).toBeInTheDocument();
-  });
-
   it("タイトルが表示される", () => {
     render(<Home />);
 

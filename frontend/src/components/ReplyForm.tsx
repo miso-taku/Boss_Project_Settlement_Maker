@@ -1,14 +1,50 @@
 "use client";
 
 import { useState } from "react";
+import {
+  Box,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  FormControl,
+  FormLabel,
+  Input,
+  Radio,
+  RadioGroup,
+  Stack,
+  Textarea,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
+  Spinner,
+  useToast,
+  Heading,
+  Text,
+  Icon,
+  Divider,
+  HStack,
+  Badge,
+  VStack,
+  useColorModeValue,
+} from "@chakra-ui/react";
+import {
+  EditIcon,
+  TimeIcon,
+  StarIcon,
+  InfoIcon,
+  CopyIcon,
+  CheckIcon,
+} from "@chakra-ui/icons";
 import type { ApiError, Priority, ReplyDraftItem } from "../api/types";
 import { ApiErrorException, generateReplyDrafts } from "../api/replyDrafts";
-import LoadingSpinner from "./LoadingSpinner";
 
 /**
  * 返信案生成フォームコンポーネント。
  *
  * 依頼文・残り時間・優先度・制約を入力し、返信案を生成・表示・コピーする。
+ * Chakra UI v2を使用してモダンで洗練されたUIを実装。
  */
 export default function ReplyForm() {
   const [requestText, setRequestText] = useState("");
@@ -18,14 +54,16 @@ export default function ReplyForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
   const [replyDraft, setReplyDraft] = useState<ReplyDraftItem | null>(null);
-  const [isCopied, setIsCopied] = useState(false);
+  const toast = useToast();
+
+  const cardBg = useColorModeValue("white", "gray.800");
+  const inputBg = useColorModeValue("white", "gray.700");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
     setReplyDraft(null);
-    setIsCopied(false);
 
     try {
       const response = await generateReplyDrafts({
@@ -37,6 +75,13 @@ export default function ReplyForm() {
 
       if (response.drafts.length > 0) {
         setReplyDraft(response.drafts[0]);
+        toast({
+          title: "返信案を生成しました",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+          position: "top",
+        });
       }
     } catch (err) {
       if (err instanceof ApiErrorException) {
@@ -51,6 +96,17 @@ export default function ReplyForm() {
         });
       }
       console.error("API error:", err);
+      toast({
+        title: "エラーが発生しました",
+        description:
+          err instanceof ApiErrorException
+            ? err.apiError.message
+            : "予期しないエラーが発生しました",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -61,11 +117,13 @@ export default function ReplyForm() {
 
     try {
       await navigator.clipboard.writeText(replyDraft.text);
-      setIsCopied(true);
-      // 3秒後に「コピー済み」表示をリセット
-      setTimeout(() => {
-        setIsCopied(false);
-      }, 3000);
+      toast({
+        title: "コピーしました",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+        position: "top",
+      });
     } catch (err) {
       console.error("Copy error:", err);
       // フォールバック: テキストエリアを作成してコピー
@@ -75,178 +133,377 @@ export default function ReplyForm() {
       textarea.select();
       try {
         document.execCommand("copy");
-        setIsCopied(true);
-        setTimeout(() => {
-          setIsCopied(false);
-        }, 3000);
+        toast({
+          title: "コピーしました",
+          status: "success",
+          duration: 2000,
+          isClosable: true,
+          position: "top",
+        });
       } catch (fallbackErr) {
         console.error("Fallback copy error:", fallbackErr);
+        toast({
+          title: "コピーに失敗しました",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+          position: "top",
+        });
       }
       document.body.removeChild(textarea);
     }
   };
 
+  const getPriorityColor = (priority: Priority | null) => {
+    switch (priority) {
+      case "high":
+        return "red";
+      case "medium":
+        return "orange";
+      case "low":
+        return "green";
+      default:
+        return "gray";
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label htmlFor="request-text">
-          依頼文 <span style={{ color: "red" }}>*</span>
-        </label>
-        <textarea
-          id="request-text"
-          value={requestText}
-          onChange={(e) => setRequestText(e.target.value)}
-          rows={5}
-          required
-          style={{ width: "100%", padding: "8px" }}
-        />
-      </div>
-
-      <div style={{ marginTop: "16px" }}>
-        <label htmlFor="remaining-hours">残り時間（時間）</label>
-        <input
-          id="remaining-hours"
-          type="number"
-          min="0"
-          step="0.5"
-          value={remainingHours ?? ""}
-          onChange={(e) => {
-            const value = e.target.value;
-            setRemainingHours(value === "" ? null : parseFloat(value));
-          }}
-          style={{ width: "100%", padding: "8px" }}
-        />
-      </div>
-
-      <div style={{ marginTop: "16px" }}>
-        <label>優先度</label>
-        <div style={{ marginTop: "8px" }}>
-          <label style={{ marginRight: "16px" }}>
-            <input
-              type="radio"
-              name="priority"
-              value="high"
-              checked={priority === "high"}
-              onChange={() => setPriority("high")}
-            />
-            高
-          </label>
-          <label style={{ marginRight: "16px" }}>
-            <input
-              type="radio"
-              name="priority"
-              value="medium"
-              checked={priority === "medium"}
-              onChange={() => setPriority("medium")}
-            />
-            中
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="priority"
-              value="low"
-              checked={priority === "low"}
-              onChange={() => setPriority("low")}
-            />
-            低
-          </label>
-        </div>
-      </div>
-
-      <div style={{ marginTop: "16px" }}>
-        <label htmlFor="constraints">制約（自由文）</label>
-        <textarea
-          id="constraints"
-          value={constraints}
-          onChange={(e) => setConstraints(e.target.value)}
-          rows={3}
-          style={{ width: "100%", padding: "8px" }}
-        />
-      </div>
-
-      <div style={{ marginTop: "24px" }}>
-        <button
-          type="submit"
-          disabled={isLoading || !requestText.trim()}
-          style={{
-            padding: "12px 24px",
-            fontSize: "16px",
-            backgroundColor: isLoading ? "#ccc" : "#0070f3",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor:
-              isLoading || !requestText.trim() ? "not-allowed" : "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
+    <Stack spacing={6}>
+      <Card
+        bg={cardBg}
+        boxShadow="xl"
+        borderRadius="2xl"
+        overflow="hidden"
+        className="fade-in"
+        _hover={{ boxShadow: "2xl", transform: "translateY(-2px)" }}
+        transition="all 0.3s"
+      >
+        <CardHeader
+          bgGradient="linear(to-r, blue.500, purple.500)"
+          color="white"
+          py={6}
         >
-          {isLoading && <LoadingSpinner />}
-          {isLoading ? "生成中..." : "生成実行"}
-        </button>
-      </div>
+          <HStack spacing={3}>
+            <Icon as={EditIcon} boxSize={6} />
+            <Heading size="lg" fontWeight="bold">
+              入力フォーム
+            </Heading>
+          </HStack>
+        </CardHeader>
+        <CardBody p={6}>
+          <form onSubmit={handleSubmit}>
+            <VStack spacing={6} align="stretch">
+              <FormControl isRequired>
+                <FormLabel
+                  fontSize="md"
+                  fontWeight="semibold"
+                  color="gray.700"
+                  mb={2}
+                >
+                  <HStack spacing={2}>
+                    <Icon as={EditIcon} color="blue.500" />
+                    <Text>依頼文</Text>
+                    <Badge colorScheme="red" fontSize="xs">
+                      必須
+                    </Badge>
+                  </HStack>
+                </FormLabel>
+                <Textarea
+                  id="request-text"
+                  value={requestText}
+                  onChange={(e) => setRequestText(e.target.value)}
+                  rows={5}
+                  placeholder="上司からの依頼文を入力してください..."
+                  required
+                  bg={inputBg}
+                  border="2px solid"
+                  borderColor="gray.200"
+                  _hover={{ borderColor: "blue.300" }}
+                  _focus={{
+                    borderColor: "blue.500",
+                    boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)",
+                  }}
+                  transition="all 0.2s"
+                />
+              </FormControl>
+
+              <HStack spacing={4} align="flex-start">
+                <FormControl flex="1">
+                  <FormLabel
+                    fontSize="md"
+                    fontWeight="semibold"
+                    color="gray.700"
+                    mb={2}
+                  >
+                    <HStack spacing={2}>
+                      <Icon as={TimeIcon} color="orange.500" />
+                      <Text>残り時間（時間）</Text>
+                    </HStack>
+                  </FormLabel>
+                  <Input
+                    id="remaining-hours"
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={remainingHours ?? ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setRemainingHours(
+                        value === "" ? null : parseFloat(value)
+                      );
+                    }}
+                    placeholder="例: 2.5"
+                    bg={inputBg}
+                    border="2px solid"
+                    borderColor="gray.200"
+                    _hover={{ borderColor: "orange.300" }}
+                    _focus={{
+                      borderColor: "orange.500",
+                      boxShadow: "0 0 0 1px var(--chakra-colors-orange-500)",
+                    }}
+                    transition="all 0.2s"
+                  />
+                </FormControl>
+
+                <FormControl flex="1">
+                  <FormLabel
+                    fontSize="md"
+                    fontWeight="semibold"
+                    color="gray.700"
+                    mb={2}
+                  >
+                    <HStack spacing={2}>
+                      <Icon as={StarIcon} color="yellow.500" />
+                      <Text>優先度</Text>
+                    </HStack>
+                  </FormLabel>
+                  <RadioGroup
+                    value={priority ?? ""}
+                    onChange={(value) => setPriority(value as Priority)}
+                  >
+                    <HStack spacing={4}>
+                      <Radio
+                        value="high"
+                        colorScheme="red"
+                        size="lg"
+                        _hover={{ transform: "scale(1.1)" }}
+                        transition="transform 0.2s"
+                      >
+                        <Badge colorScheme="red" px={2} py={1}>
+                          高
+                        </Badge>
+                      </Radio>
+                      <Radio
+                        value="medium"
+                        colorScheme="orange"
+                        size="lg"
+                        _hover={{ transform: "scale(1.1)" }}
+                        transition="transform 0.2s"
+                      >
+                        <Badge colorScheme="orange" px={2} py={1}>
+                          中
+                        </Badge>
+                      </Radio>
+                      <Radio
+                        value="low"
+                        colorScheme="green"
+                        size="lg"
+                        _hover={{ transform: "scale(1.1)" }}
+                        transition="transform 0.2s"
+                      >
+                        <Badge colorScheme="green" px={2} py={1}>
+                          低
+                        </Badge>
+                      </Radio>
+                    </HStack>
+                  </RadioGroup>
+                </FormControl>
+              </HStack>
+
+              <FormControl>
+                <FormLabel
+                  fontSize="md"
+                  fontWeight="semibold"
+                  color="gray.700"
+                  mb={2}
+                >
+                  <HStack spacing={2}>
+                    <Icon as={InfoIcon} color="purple.500" />
+                    <Text>制約（自由文）</Text>
+                  </HStack>
+                </FormLabel>
+                <Textarea
+                  id="constraints"
+                  value={constraints}
+                  onChange={(e) => setConstraints(e.target.value)}
+                  rows={3}
+                  placeholder="制約やNG事項、落とし所などを記入してください..."
+                  bg={inputBg}
+                  border="2px solid"
+                  borderColor="gray.200"
+                  _hover={{ borderColor: "purple.300" }}
+                  _focus={{
+                    borderColor: "purple.500",
+                    boxShadow: "0 0 0 1px var(--chakra-colors-purple-500)",
+                  }}
+                  transition="all 0.2s"
+                />
+              </FormControl>
+
+              <Divider />
+
+              <Button
+                type="submit"
+                size="lg"
+                isLoading={isLoading}
+                loadingText="生成中..."
+                disabled={!requestText.trim()}
+                width="full"
+                bgGradient="linear(to-r, blue.500, purple.500)"
+                color="white"
+                _hover={{
+                  bgGradient: "linear(to-r, blue.600, purple.600)",
+                  transform: "translateY(-2px)",
+                  boxShadow: "lg",
+                }}
+                _active={{
+                  transform: "translateY(0)",
+                }}
+                _disabled={{
+                  opacity: 0.5,
+                  cursor: "not-allowed",
+                }}
+                transition="all 0.3s"
+                fontWeight="bold"
+                fontSize="lg"
+                py={6}
+              >
+                {isLoading ? "生成中..." : "✨ 返信案を生成する"}
+              </Button>
+            </VStack>
+          </form>
+        </CardBody>
+      </Card>
 
       {error && (
-        <div
-          style={{
-            marginTop: "16px",
-            padding: "12px",
-            backgroundColor: "#fee",
-            border: "1px solid #fcc",
-            borderRadius: "4px",
-            color: "#c00",
-          }}
-          role="alert"
-          aria-live="polite"
+        <Alert
+          status="error"
+          borderRadius="xl"
+          boxShadow="lg"
+          className="slide-in"
         >
-          <strong>エラー:</strong> {error.message}
-          {error.statusCode && (
-            <span style={{ fontSize: "12px", marginLeft: "8px" }}>
-              (HTTP {error.statusCode})
-            </span>
-          )}
-        </div>
+          <AlertIcon />
+          <Box>
+            <AlertTitle fontSize="lg" fontWeight="bold">
+              エラーが発生しました
+            </AlertTitle>
+            <AlertDescription>
+              {error.message}
+              {error.statusCode && (
+                <Badge ml={2} colorScheme="red">
+                  HTTP {error.statusCode}
+                </Badge>
+              )}
+            </AlertDescription>
+          </Box>
+        </Alert>
+      )}
+
+      {isLoading && (
+        <Card bg={cardBg} boxShadow="xl" borderRadius="2xl" className="fade-in">
+          <CardBody p={8}>
+            <VStack spacing={4}>
+              <Spinner
+                size="xl"
+                thickness="4px"
+                speed="0.65s"
+                color="blue.500"
+                emptyColor="gray.200"
+              />
+              <Text fontSize="lg" fontWeight="semibold" color="gray.600">
+                返信案を生成しています...
+              </Text>
+              <Text fontSize="sm" color="gray.500">
+                しばらくお待ちください
+              </Text>
+            </VStack>
+          </CardBody>
+        </Card>
       )}
 
       {replyDraft && (
-        <div
-          style={{
-            marginTop: "24px",
-            padding: "16px",
-            backgroundColor: "#f5f5f5",
-            border: "1px solid #ddd",
-            borderRadius: "4px",
-          }}
+        <Card
+          bg={cardBg}
+          boxShadow="xl"
+          borderRadius="2xl"
+          overflow="hidden"
+          className="fade-in"
+          _hover={{ boxShadow: "2xl", transform: "translateY(-2px)" }}
+          transition="all 0.3s"
         >
-          <h3 style={{ marginTop: 0, marginBottom: "12px" }}>返信案</h3>
-          <div
-            style={{
-              whiteSpace: "pre-wrap",
-              lineHeight: "1.6",
-              marginBottom: "12px",
-            }}
+          <CardHeader
+            bgGradient="linear(to-r, green.400, teal.500)"
+            color="white"
+            py={6}
           >
-            {replyDraft.text}
-          </div>
-          <button
-            type="button"
-            onClick={handleCopy}
-            style={{
-              padding: "8px 16px",
-              fontSize: "14px",
-              backgroundColor: isCopied ? "#28a745" : "#0070f3",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-            }}
-          >
-            {isCopied ? "コピー済み" : "コピー"}
-          </button>
-        </div>
+            <HStack spacing={3} justify="space-between">
+              <HStack spacing={3}>
+                <Icon as={CheckIcon} boxSize={6} />
+                <Heading size="lg" fontWeight="bold">
+                  生成された返信案
+                </Heading>
+              </HStack>
+              <Badge colorScheme="green" fontSize="md" px={3} py={1}>
+                完成
+              </Badge>
+            </HStack>
+          </CardHeader>
+          <CardBody p={6}>
+            <VStack spacing={4} align="stretch">
+              <Box
+                p={6}
+                bgGradient="linear(to-br, gray.50, gray.100)"
+                borderRadius="xl"
+                border="2px solid"
+                borderColor="gray.200"
+                minH="200px"
+              >
+                <Text
+                  whiteSpace="pre-wrap"
+                  lineHeight="1.8"
+                  fontSize="md"
+                  color="gray.800"
+                  fontWeight="normal"
+                >
+                  {replyDraft.text}
+                </Text>
+              </Box>
+              <Button
+                leftIcon={<CopyIcon />}
+                onClick={handleCopy}
+                size="lg"
+                width="full"
+                bgGradient="linear(to-r, green.400, teal.500)"
+                color="white"
+                _hover={{
+                  bgGradient: "linear(to-r, green.500, teal.600)",
+                  transform: "translateY(-2px)",
+                  boxShadow: "lg",
+                }}
+                _active={{
+                  transform: "translateY(0)",
+                }}
+                transition="all 0.3s"
+                fontWeight="bold"
+                fontSize="md"
+                py={6}
+              >
+                クリップボードにコピー
+              </Button>
+            </VStack>
+          </CardBody>
+        </Card>
       )}
-    </form>
+    </Stack>
   );
 }
