@@ -28,8 +28,8 @@ export interface ReplyDraftItem {
 
 /** 返信案生成 API のレスポンス body */
 export interface GenerateReplyDraftsResponse {
-  /** 返信案のリスト */
-  drafts: ReplyDraftItem[];
+  /** 返信案 1 件 */
+  draft: ReplyDraftItem;
 }
 
 /** エラータイプ */

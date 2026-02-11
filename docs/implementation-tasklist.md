@@ -9,11 +9,11 @@
 
 | 項目 | 数 |
 |------|-----|
-| **総タスク数** | 26 |
-| **完了** | 19 |
+| **総タスク数** | 27 |
+| **完了** | 22 |
 | **進行中** | 0 |
-| **未着手** | 7 |
-| **進捗率** | 73% (19/26) |
+| **未着手** | 5 |
+| **進捗率** | 81% (22/27) |
 
 ### セクション別進捗
 
@@ -22,11 +22,11 @@
 | 1. ドキュメント整備 | 2 | 0 | 0 | 2 | 100% |
 | 2. バックエンド | 7 | 0 | 1 | 8 | 88% |
 | 3. フロントエンド | 7 | 0 | 0 | 7 | 100% |
-| 4. 結合・統合 | 0 | 0 | 2 | 2 | 0% |
+| 4. 結合・統合 | 2 | 0 | 0 | 2 | 100% |
 | 5. 振り返り・ドキュメント最終更新 | 0 | 0 | 2 | 2 | 0% |
-| 6. 仕様変更 | 2 | 0 | 0 | 2 | 100% |
+| 6. 仕様変更 | 3 | 0 | 0 | 3 | 100% |
 
-*最終更新: 2026-02-09（F7 完了）。タスク完了・ステータス変更のたびに上記数値を更新すること。*
+*最終更新: 2026-02-11（S3 完了）。タスク完了・ステータス変更のたびに上記数値を更新すること。*
 
 ---
 
@@ -72,8 +72,8 @@
 
 | # | タスク | ステータス | 完了日 | 備考 |
 |---|--------|------------|--------|------|
-| I1 | FE-BE 結合動作確認 | 未着手 | — | |
-| I2 | 受け入れ条件の確認（product-requirements 4.1〜4.3） | 未着手 | — | |
+| I1 | FE-BE 結合動作確認 | 完了 | 2026-02-11 | 動作確認完了 |
+| I2 | 受け入れ条件の確認（product-requirements 4.1〜4.3） | 完了 | 2026-02-11 | 動作確認完了 |
 
 ---
 
@@ -92,11 +92,14 @@
 |---|--------|------------|--------|------|
 | S1 | 返信案を1案に絞る（仕様変更） | 完了 | 2025-02-08 | 永続ドキュメント・BEプロンプト・テストを「1案」に統一。.steering/20250208-reply-draft-single |
 | S2 | 返信案チェックを10点満点×3項目・全て8以上でOKに変更 | 完了 | 2025-02-08 | Domain CheckResult に score_1/2/3 追加、ok は派生。チェックエージェント・ドキュメント更新。.steering/20250208-reply-check-10point-scoring |
+| S3 | APIレスポンスを draft 単数に・チェック出力を must_fix/nice_to_have に・score_sum 改善なしでループ終了 | 完了 | 2026-02-11 | レスポンスを draft: { text } に変更。CheckResult を must_fix/nice_to_have に変更。max_revise_rounds=2 に加え score_sum が改善しない場合は終了。.steering/20260211-response-single-and-check-improvement |
 
 ---
 
 ## 更新履歴
 
+- 2026-02-11: S3 完了（APIレスポンス単数化・チェック must_fix/nice_to_have・score_sum 改善なしでループ終了）。レスポンスを draft: { text } に変更。CheckResult を must_fix/nice_to_have に変更。generate_reply_drafts で score_sum が改善しない場合はループ終了。architecture, functional-design, glossary を更新。実装サマリー・セクション6を更新。
+- 2026-02-11: I1, I2 完了（結合・統合の動作確認）。FE-BE 結合動作確認および product-requirements 4.1〜4.3 の受け入れ条件確認を完了。実装サマリー・セクション別進捗を更新。
 - 2026-02-09: F7 完了（lint/format）。Prettier導入・設定完了（`.prettierrc`, `.prettierignore`作成、`package.json`にprettier/eslint-config-prettier追加、format/format:check/type-checkスクリプト追加）。ESLint実行: ✔ No ESLint warnings or errors。TypeScript型チェック: 通過（`npx tsc --noEmit`）。npm install実行後、`npm run format`でフォーマット適用可能。実装サマリー・セクション別進捗を更新。
 - 2026-02-09: F6 完了（コンポーネント / 統合テスト）。frontend/jest.config.ts（Jest設定、Next.js標準のnext/jestを使用）、frontend/jest.setup.ts（@testing-library/jest-domのセットアップ）を新規作成。frontend/package.json にテスト関連の依存関係（jest, jest-environment-jsdom, @testing-library/react, @testing-library/jest-dom, @testing-library/user-event, @types/jest, ts-node）とtest/test:watchスクリプトを追加。frontend/src/components/__tests__/LoadingSpinner.test.tsx を新規作成（スピナーの表示・アクセシビリティ属性のテスト）。frontend/src/app/__tests__/page.test.tsx を新規作成（ページのレンダリング・ReplyForm統合のテスト）。frontend/README.md にテスト実行方法・テスト環境・テストファイル配置・テストカバレッジを追記。実装サマリー・セクション別進捗を更新。
 - 2026-02-09: F5 完了（エラーハンドリング・ローディング表示の改善）。frontend/src/api/types.ts にエラー型（ApiError, ErrorType）を追加。frontend/src/api/replyDrafts.ts を更新（HTTPステータスコード別のエラー処理・ネットワークエラー処理・エラーレスポンスの詳細情報取得を実装、ApiErrorException クラスを追加）。frontend/src/components/LoadingSpinner.tsx を新規作成（CSS アニメーションでスピナーを実装）。frontend/src/components/ReplyForm.tsx を更新（エラー表示の改善・ローディング表示の改善・スピナーの統合、ApiError 型を使用したエラー状態管理）。frontend/src/app/globals.css にスピナーアニメーション（spin）を追加。frontend/src/api/__tests__/replyDrafts.test.ts を更新（HTTPエラー・ネットワークエラー・バリデーションエラー（配列形式）のテストを追加）。frontend/src/components/__tests__/ReplyForm.test.tsx を更新（ローディング表示・エラー表示のテストを追加）。実装サマリー・セクション別進捗を更新。

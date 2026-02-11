@@ -48,11 +48,17 @@ def generate_reply_drafts(
         返信案のリスト（最終版）
     """
     drafts = generate_port.generate(request_text, my_situation)
+    previous_score_sum: int | None = None
 
     for _ in range(max_revise_rounds):
         check_result = check_port.check(drafts, request_text, my_situation)
         if check_result.ok:
             return drafts
+        current_score_sum = check_result.score_sum
+        if previous_score_sum is not None and current_score_sum <= previous_score_sum:
+            # 改善なし → ループ終了
+            return drafts
+        previous_score_sum = current_score_sum
         drafts = revise_port.revise(drafts, check_result, request_text, my_situation)
 
     return drafts

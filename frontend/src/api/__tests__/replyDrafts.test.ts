@@ -16,8 +16,8 @@ describe("generateReplyDrafts", () => {
   });
 
   it("正常系: リクエストが正しく送信され、レスポンスが正しく変換される", async () => {
-    const mockResponse: { drafts: Array<{ text: string }> } = {
-      drafts: [{ text: "返信案の本文" }],
+    const mockResponse: { draft: { text: string } } = {
+      draft: { text: "返信案の本文" },
     };
 
     (global.fetch as jest.Mock).mockResolvedValueOnce({
@@ -46,13 +46,13 @@ describe("generateReplyDrafts", () => {
     );
 
     expect(result).toEqual(mockResponse);
-    expect(result.drafts).toHaveLength(1);
-    expect(result.drafts[0].text).toBe("返信案の本文");
+    expect(result.draft).toEqual({ text: "返信案の本文" });
+    expect(result.draft.text).toBe("返信案の本文");
   });
 
   it("正常系: 任意フィールドが null または undefined の場合", async () => {
-    const mockResponse: { drafts: Array<{ text: string }> } = {
-      drafts: [{ text: "返信案の本文" }],
+    const mockResponse: { draft: { text: string } } = {
+      draft: { text: "返信案の本文" },
     };
 
     (global.fetch as jest.Mock).mockResolvedValueOnce({

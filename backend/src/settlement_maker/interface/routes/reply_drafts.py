@@ -74,4 +74,7 @@ def post_reply_drafts(
         check_port=check_port,
         revise_port=revise_port,
     )
-    return GenerateReplyDraftsResponse(drafts=[ReplyDraftItem(text=d.text) for d in drafts])
+    first = drafts[0] if drafts else None
+    return GenerateReplyDraftsResponse(
+        draft=ReplyDraftItem(text=first.text if first else "")
+    )

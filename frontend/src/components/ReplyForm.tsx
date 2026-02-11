@@ -73,8 +73,8 @@ export default function ReplyForm() {
         constraints: constraints || undefined,
       });
 
-      if (response.drafts.length > 0) {
-        setReplyDraft(response.drafts[0]);
+      if (response.draft) {
+        setReplyDraft(response.draft);
         toast({
           title: "返信案を生成しました",
           status: "success",
@@ -179,7 +179,7 @@ export default function ReplyForm() {
         transition="all 0.3s"
       >
         <CardHeader
-          bgGradient="linear(to-r, blue.500, purple.500)"
+          bg="gray.600"
           color="white"
           py={6}
         >
@@ -201,9 +201,9 @@ export default function ReplyForm() {
                   mb={2}
                 >
                   <HStack spacing={2}>
-                    <Icon as={EditIcon} color="blue.500" />
+                    <Icon as={EditIcon} color="gray.600" />
                     <Text>依頼文</Text>
-                    <Badge colorScheme="red" fontSize="xs">
+                    <Badge colorScheme="gray" fontSize="xs" variant="subtle">
                       必須
                     </Badge>
                   </HStack>
@@ -218,10 +218,10 @@ export default function ReplyForm() {
                   bg={inputBg}
                   border="2px solid"
                   borderColor="gray.200"
-                  _hover={{ borderColor: "blue.300" }}
+                  _hover={{ borderColor: "gray.300" }}
                   _focus={{
-                    borderColor: "blue.500",
-                    boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)",
+                    borderColor: "gray.500",
+                    boxShadow: "0 0 0 1px var(--chakra-colors-gray-500)",
                   }}
                   transition="all 0.2s"
                 />
@@ -236,7 +236,7 @@ export default function ReplyForm() {
                     mb={2}
                   >
                     <HStack spacing={2}>
-                      <Icon as={TimeIcon} color="orange.500" />
+                      <Icon as={TimeIcon} color="gray.600" />
                       <Text>残り時間（時間）</Text>
                     </HStack>
                   </FormLabel>
@@ -256,10 +256,10 @@ export default function ReplyForm() {
                     bg={inputBg}
                     border="2px solid"
                     borderColor="gray.200"
-                    _hover={{ borderColor: "orange.300" }}
+                    _hover={{ borderColor: "gray.300" }}
                     _focus={{
-                      borderColor: "orange.500",
-                      boxShadow: "0 0 0 1px var(--chakra-colors-orange-500)",
+                      borderColor: "gray.500",
+                      boxShadow: "0 0 0 1px var(--chakra-colors-gray-500)",
                     }}
                     transition="all 0.2s"
                   />
@@ -273,7 +273,7 @@ export default function ReplyForm() {
                     mb={2}
                   >
                     <HStack spacing={2}>
-                      <Icon as={StarIcon} color="yellow.500" />
+                      <Icon as={StarIcon} color="gray.600" />
                       <Text>優先度</Text>
                     </HStack>
                   </FormLabel>
@@ -289,7 +289,7 @@ export default function ReplyForm() {
                         _hover={{ transform: "scale(1.1)" }}
                         transition="transform 0.2s"
                       >
-                        <Badge colorScheme="red" px={2} py={1}>
+                        <Badge colorScheme="red" variant="subtle" px={2} py={1}>
                           高
                         </Badge>
                       </Radio>
@@ -300,7 +300,7 @@ export default function ReplyForm() {
                         _hover={{ transform: "scale(1.1)" }}
                         transition="transform 0.2s"
                       >
-                        <Badge colorScheme="orange" px={2} py={1}>
+                        <Badge colorScheme="orange" variant="subtle" px={2} py={1}>
                           中
                         </Badge>
                       </Radio>
@@ -311,7 +311,7 @@ export default function ReplyForm() {
                         _hover={{ transform: "scale(1.1)" }}
                         transition="transform 0.2s"
                       >
-                        <Badge colorScheme="green" px={2} py={1}>
+                        <Badge colorScheme="green" variant="subtle" px={2} py={1}>
                           低
                         </Badge>
                       </Radio>
@@ -328,7 +328,7 @@ export default function ReplyForm() {
                   mb={2}
                 >
                   <HStack spacing={2}>
-                    <Icon as={InfoIcon} color="purple.500" />
+                    <Icon as={InfoIcon} color="gray.600" />
                     <Text>制約（自由文）</Text>
                   </HStack>
                 </FormLabel>
@@ -341,10 +341,10 @@ export default function ReplyForm() {
                   bg={inputBg}
                   border="2px solid"
                   borderColor="gray.200"
-                  _hover={{ borderColor: "purple.300" }}
+                  _hover={{ borderColor: "gray.300" }}
                   _focus={{
-                    borderColor: "purple.500",
-                    boxShadow: "0 0 0 1px var(--chakra-colors-purple-500)",
+                    borderColor: "gray.500",
+                    boxShadow: "0 0 0 1px var(--chakra-colors-gray-500)",
                   }}
                   transition="all 0.2s"
                 />
@@ -359,10 +359,10 @@ export default function ReplyForm() {
                 loadingText="生成中..."
                 disabled={!requestText.trim()}
                 width="full"
-                bgGradient="linear(to-r, blue.500, purple.500)"
+                bg="gray.600"
                 color="white"
                 _hover={{
-                  bgGradient: "linear(to-r, blue.600, purple.600)",
+                  bg: "gray.700",
                   transform: "translateY(-2px)",
                   boxShadow: "lg",
                 }}
@@ -400,7 +400,7 @@ export default function ReplyForm() {
             <AlertDescription>
               {error.message}
               {error.statusCode && (
-                <Badge ml={2} colorScheme="red">
+                <Badge ml={2} colorScheme="red" variant="subtle">
                   HTTP {error.statusCode}
                 </Badge>
               )}
@@ -417,7 +417,7 @@ export default function ReplyForm() {
                 size="xl"
                 thickness="4px"
                 speed="0.65s"
-                color="blue.500"
+                color="gray.600"
                 emptyColor="gray.200"
               />
               <Text fontSize="lg" fontWeight="semibold" color="gray.600">
@@ -442,7 +442,7 @@ export default function ReplyForm() {
           transition="all 0.3s"
         >
           <CardHeader
-            bgGradient="linear(to-r, green.400, teal.500)"
+            bg="teal.700"
             color="white"
             py={6}
           >
@@ -453,7 +453,7 @@ export default function ReplyForm() {
                   生成された返信案
                 </Heading>
               </HStack>
-              <Badge colorScheme="green" fontSize="md" px={3} py={1}>
+              <Badge colorScheme="teal" variant="subtle" fontSize="md" px={3} py={1}>
                 完成
               </Badge>
             </HStack>
@@ -483,10 +483,10 @@ export default function ReplyForm() {
                 onClick={handleCopy}
                 size="lg"
                 width="full"
-                bgGradient="linear(to-r, green.400, teal.500)"
+                bg="teal.600"
                 color="white"
                 _hover={{
-                  bgGradient: "linear(to-r, green.500, teal.600)",
+                  bg: "teal.700",
                   transform: "translateY(-2px)",
                   boxShadow: "lg",
                 }}

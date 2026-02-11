@@ -13,7 +13,7 @@ export default function Home() {
   return (
     <Box
       minH="100vh"
-      bgGradient="linear(to-br, purple.400, pink.500, blue.500)"
+      bgGradient="linear(to-br, gray.50, gray.100)"
       py={12}
       px={4}
     >
@@ -24,24 +24,24 @@ export default function Home() {
               as="h1"
               size="2xl"
               mb={3}
-              color="white"
-              textShadow="2px 2px 4px rgba(0,0,0,0.2)"
+              color="gray.800"
               fontWeight="bold"
             >
               上司案件・落とし所AIエージェント
             </Heading>
             <HStack spacing={3} justify="center" mb={2}>
               <Badge
-                colorScheme="purple"
+                colorScheme="gray"
                 fontSize="md"
                 px={3}
                 py={1}
                 borderRadius="full"
+                variant="subtle"
               >
                 「今日中に」を今日中にしないAI
               </Badge>
             </HStack>
-            <Text fontSize="lg" color="whiteAlpha.900" mt={2}>
+            <Text fontSize="lg" color="gray.600" mt={2}>
               依頼文と状況を入力するだけで、角の立たない返信案を自動生成
             </Text>
           </Box>

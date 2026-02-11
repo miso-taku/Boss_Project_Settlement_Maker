@@ -1,7 +1,7 @@
 """返信案生成 API のリクエスト/レスポンス DTO。
 
 architecture 3.3 に従う。依頼文・自分の状況（残り時間・優先度・制約）を入力、
-返信案リストを出力する。
+返信案 1 件（draft）を出力する。
 """
 
 from typing import Literal
@@ -44,4 +44,4 @@ class ReplyDraftItem(BaseModel):
 class GenerateReplyDraftsResponse(BaseModel):
     """POST /api/v1/reply-drafts のレスポンス body。"""
 
-    drafts: list[ReplyDraftItem] = Field(..., description="返信案のリスト")
+    draft: ReplyDraftItem = Field(..., description="返信案 1 件")

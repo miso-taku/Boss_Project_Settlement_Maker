@@ -94,23 +94,35 @@ class TestCheckResult:
     """CheckResult 値オブジェクトのテスト。"""
 
     def test_creates_ok_when_all_scores_at_least_8(self) -> None:
-        c = CheckResult(score_1=9, score_2=9, score_3=9, feedback="")
+        c = CheckResult(score_1=9, score_2=9, score_3=9, must_fix=(), nice_to_have=())
         assert c.ok is True
-        assert c.feedback == ""
+        assert c.must_fix == ()
+        assert c.nice_to_have == ()
 
     def test_creates_ok_when_all_scores_exactly_8(self) -> None:
-        c = CheckResult(score_1=8, score_2=8, score_3=8, feedback="")
+        c = CheckResult(score_1=8, score_2=8, score_3=8, must_fix=(), nice_to_have=())
         assert c.ok is True
 
     def test_creates_ng_when_any_score_below_8(self) -> None:
-        c = CheckResult(score_1=7, score_2=8, score_3=8, feedback="表現を柔らかくしてください")
+        c = CheckResult(
+            score_1=7,
+            score_2=8,
+            score_3=8,
+            must_fix=("表現を柔らかくする",),
+            nice_to_have=("敬語を統一する",),
+        )
         assert c.ok is False
-        assert c.feedback == "表現を柔らかくしてください"
+        assert c.must_fix == ("表現を柔らかくする",)
+        assert c.nice_to_have == ("敬語を統一する",)
+
+    def test_score_sum(self) -> None:
+        c = CheckResult(score_1=7, score_2=8, score_3=9, must_fix=(), nice_to_have=())
+        assert c.score_sum == 24
 
     def test_rejects_score_below_0(self) -> None:
         with pytest.raises(ValueError, match="score_1 は0〜10の範囲で指定してください"):
-            CheckResult(score_1=-1, score_2=8, score_3=8, feedback="")
+            CheckResult(score_1=-1, score_2=8, score_3=8, must_fix=(), nice_to_have=())
 
     def test_rejects_score_above_10(self) -> None:
         with pytest.raises(ValueError, match="score_3 は0〜10の範囲で指定してください"):
-            CheckResult(score_1=8, score_2=8, score_3=11, feedback="")
+            CheckResult(score_1=8, score_2=8, score_3=11, must_fix=(), nice_to_have=())

@@ -98,8 +98,8 @@ class PydanticAICheckAdapter(CheckReplyDraftsPort):
                 "2) 代替案・確認質問が適切か"
                 "3) 依頼文・制約に反していないか"
                 "3項目すべてが8以上なら合格です。"
-                "1つでも8未満の項目があれば、feedback に具体的な改善点を書いてください。"
-                "出力は score_1, score_2, score_3（各0〜10）と feedback の JSON にしてください。"
+                "1つでも8未満の項目があれば、must_fix に必須で直すべき点を箇条書きで、nice_to_have にあればよい改善を箇条書きで書いてください。"
+                "出力は score_1, score_2, score_3（各0〜10）と must_fix（文字列のリスト）, nice_to_have（文字列のリスト）の JSON にしてください。"
             ),
         )
 
@@ -122,16 +122,12 @@ class PydanticAICheckAdapter(CheckReplyDraftsPort):
         )
         result = self._agent.run_sync(user_prompt)
         output: CheckResultSchema = result.output
-        print(f"check output: {output}")
-        print(f"check output.score_1: {output.score_1}")
-        print(f"check output.score_2: {output.score_2}")
-        print(f"check output.score_3: {output.score_3}")
-        print(f"check output.feedback: {output.feedback}")
         return CheckResult(
             score_1=output.score_1,
             score_2=output.score_2,
             score_3=output.score_3,
-            feedback=output.feedback or "",
+            must_fix=tuple(output.must_fix or []),
+            nice_to_have=tuple(output.nice_to_have or []),
         )
 
 
@@ -160,6 +156,14 @@ class PydanticAIReviseAdapter(ReviseReplyDraftsPort):
         my_situation: MySituation,
     ) -> list[ReplyDraft]:
         drafts_text = "\n".join(f"- {d.text}" for d in drafts)
+        must_fix_text = (
+            "\n".join(f"- {s}" for s in check_result.must_fix) if check_result.must_fix else "（なし）"
+        )
+        nice_to_have_text = (
+            "\n".join(f"- {s}" for s in check_result.nice_to_have)
+            if check_result.nice_to_have
+            else "（なし）"
+        )
         user_prompt = (
             "【依頼文】\n"
             f"{request_text.value}\n\n"
@@ -167,9 +171,11 @@ class PydanticAIReviseAdapter(ReviseReplyDraftsPort):
             f"{_format_situation(my_situation)}\n\n"
             "【現在の返信案リスト】\n"
             f"{drafts_text}\n\n"
-            "【チェック指摘】\n"
-            f"{check_result.feedback}\n\n"
-            "上記の指摘を反映して、返信案を1件に修正して返してください。"
+            "【必須修正】\n"
+            f"{must_fix_text}\n\n"
+            "【任意改善】\n"
+            f"{nice_to_have_text}\n\n"
+            "上記の必須修正を反映し、可能なら任意改善も反映して、返信案を1件に修正して返してください。"
         )
         result = self._agent.run_sync(user_prompt)
         output: ReplyDraftsOutput = result.output

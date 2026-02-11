@@ -74,7 +74,8 @@ class CheckResult:
     score_1: int  # 角の立たなさ 0-10
     score_2: int  # 代替案・確認質問の適切さ 0-10
     score_3: int  # 依頼文・制約準拠 0-10
-    feedback: str  # 指摘・改善点（NG 時）。OK の場合は空文字可
+    must_fix: tuple[str, ...]  # 必須修正（箇条書き）。空可
+    nice_to_have: tuple[str, ...]  # 任意改善（箇条書き）。空可
 
     def __post_init__(self) -> None:
         for i, s in enumerate((self.score_1, self.score_2, self.score_3), 1):
@@ -89,3 +90,8 @@ class CheckResult:
             and self.score_2 >= CHECK_PASS_THRESHOLD
             and self.score_3 >= CHECK_PASS_THRESHOLD
         )
+
+    @property
+    def score_sum(self) -> int:
+        """3項目の合計（改善判定用）。"""
+        return self.score_1 + self.score_2 + self.score_3

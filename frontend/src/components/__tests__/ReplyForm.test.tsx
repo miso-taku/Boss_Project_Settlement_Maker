@@ -108,7 +108,7 @@ describe("ReplyForm", () => {
   it("生成実行ボタンをクリックすると API が呼び出される", async () => {
     const user = userEvent.setup();
     const mockResponse: GenerateReplyDraftsResponse = {
-      drafts: [{ text: "返信案の本文" }],
+      draft: { text: "返信案の本文" },
     };
     (generateReplyDrafts as jest.Mock).mockResolvedValueOnce(mockResponse);
 
@@ -133,7 +133,7 @@ describe("ReplyForm", () => {
   it("API レスポンスを受け取ると返信案が表示される", async () => {
     const user = userEvent.setup();
     const mockResponse: GenerateReplyDraftsResponse = {
-      drafts: [{ text: "返信案の本文\n改行を含むテキスト" }],
+      draft: { text: "返信案の本文\n改行を含むテキスト" },
     };
     (generateReplyDrafts as jest.Mock).mockResolvedValueOnce(mockResponse);
 
@@ -153,7 +153,7 @@ describe("ReplyForm", () => {
   it("コピーボタンが表示される", async () => {
     const user = userEvent.setup();
     const mockResponse: GenerateReplyDraftsResponse = {
-      drafts: [{ text: "返信案の本文" }],
+      draft: { text: "返信案の本文" },
     };
     (generateReplyDrafts as jest.Mock).mockResolvedValueOnce(mockResponse);
 
@@ -175,7 +175,7 @@ describe("ReplyForm", () => {
   it("コピーボタンをクリックするとクリップボードにコピーされる", async () => {
     const user = userEvent.setup();
     const mockResponse: GenerateReplyDraftsResponse = {
-      drafts: [{ text: "返信案の本文" }],
+      draft: { text: "返信案の本文" },
     };
     (generateReplyDrafts as jest.Mock).mockResolvedValueOnce(mockResponse);
 
@@ -208,7 +208,7 @@ describe("ReplyForm", () => {
   it("ローディング中にスピナーが表示される", async () => {
     const user = userEvent.setup();
     const mockResponse: GenerateReplyDraftsResponse = {
-      drafts: [{ text: "返信案の本文" }],
+      draft: { text: "返信案の本文" },
     };
     // レスポンスを遅延させる
     (generateReplyDrafts as jest.Mock).mockImplementation(

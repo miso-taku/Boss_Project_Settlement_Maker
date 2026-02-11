@@ -35,7 +35,7 @@ class MockCheckPort:
         request_text: RequestText,
         my_situation: MySituation,
     ) -> CheckResult:
-        return CheckResult(score_1=9, score_2=9, score_3=9, feedback="")
+        return CheckResult(score_1=9, score_2=9, score_3=9, must_fix=(), nice_to_have=())
 
 
 class MockRevisePort:
@@ -77,9 +77,9 @@ def test_post_reply_drafts_returns_200_and_drafts(client_with_mock_ports):
     )
     assert response.status_code == 200
     data = response.json()
-    assert "drafts" in data
-    assert len(data["drafts"]) == 1
-    assert data["drafts"][0]["text"] == "返信案です。"
+    assert "draft" in data
+    assert "drafts" not in data
+    assert data["draft"]["text"] == "返信案です。"
 
 
 def test_post_reply_drafts_minimal_body_returns_200(client_with_mock_ports):
@@ -90,8 +90,8 @@ def test_post_reply_drafts_minimal_body_returns_200(client_with_mock_ports):
     )
     assert response.status_code == 200
     data = response.json()
-    assert "drafts" in data
-    assert len(data["drafts"]) == 1
+    assert "draft" in data
+    assert data["draft"]["text"]
 
 
 def test_post_reply_drafts_empty_request_text_returns_422(client_with_mock_ports):
