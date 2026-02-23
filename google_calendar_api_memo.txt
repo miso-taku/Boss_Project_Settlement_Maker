@@ -1,0 +1,42 @@
+Google Cloudの設定（APIの有効化と認証情報の取得）
+Google Cloud Consoleでプロジェクトを作成または選択します。
+「APIとサービス」から Google Calendar API を有効にします。
+OAuth同意画面を設定し、自分自身のメールアドレスをテストユーザーとして追加します。
+「認証情報」から OAuth 2.0 クライアント ID を作成（アプリケーションの種類は「デスクトップ アプリ」）し、JSONファイルをダウンロードします。
+
+MCPサーバーの導入
+GitHubなどで公開されているオープンソースのMCPサーバーを利用するのが一般的です。
+google-calendar-mcp (Python版)
+
+
+```python
+from pydantic_ai import Agent
+from pydantic_ai.mcp import MCPServerStdio
+
+# 1. MCPサーバーの接続設定（npxなどでサーバーを起動するコマンドを指定）
+mcp_server = MCPServerStdio(
+    command='npx',
+    args=['-y', '@nspady/google-calendar-mcp'],
+    env={
+        'GOOGLE_CLIENT_ID': 'YOUR_CLIENT_ID',
+        'GOOGLE_CLIENT_SECRET': 'YOUR_CLIENT_SECRET',
+        # 必要に応じて他の環境変数を設定
+    }
+)
+
+# 2. エージェントの作成
+# builtin_tools に MCP サーバーを指定することで、サーバー内のツールを自動取得します
+agent = Agent(
+    'openai:gpt-5-mini',
+    deps_type=None,
+    result_type=str,
+    system_prompt='あなたは優秀な秘書です。カレンダーを確認して予定を管理してください。',
+    builtin_tools=[mcp_server] 
+)
+
+# 3. 実行
+async def main():
+    result = await agent.run('明日の10時から11時まで「MTG」という予定を入れてください')
+    print(result.data)
+
+```

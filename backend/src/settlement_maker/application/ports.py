@@ -5,6 +5,7 @@ Infrastructure が各 PydanticAI エージェントを Adapter として実装�
 architecture 3.5（生成→チェック→作り直し）に従う。
 """
 
+from datetime import date
 from typing import Protocol
 
 from settlement_maker.domain.models import (
@@ -13,6 +14,14 @@ from settlement_maker.domain.models import (
     ReplyDraft,
     RequestText,
 )
+
+
+class GetCalendarSituationPort(Protocol):
+    """カレンダー予定取得 Port。対象日 → 自分の状況（残り時間・制約を導出）。"""
+
+    async def get_my_situation_for_date(self, target_date: date) -> MySituation:
+        """指定日の予定を取得し、残り時間・制約を導出して MySituation を返す。"""
+        ...
 
 
 class GenerateReplyDraftsPort(Protocol):

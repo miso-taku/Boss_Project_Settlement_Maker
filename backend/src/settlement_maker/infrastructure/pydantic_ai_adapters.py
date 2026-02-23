@@ -7,10 +7,6 @@ Application 層の Port を満たし、各エージェントで run_sync して 
 import os
 
 from dotenv import load_dotenv
-
-# .env から環境変数を読み込む
-load_dotenv()
-
 from pydantic_ai import Agent
 
 from settlement_maker.application.ports import (
@@ -28,10 +24,16 @@ from settlement_maker.infrastructure.ai_schemas import (
     CheckResultSchema,
     ReplyDraftsOutput,
 )
+from settlement_maker.infrastructure.ai_mcp_logging import get_ai_mcp_logger
+
+load_dotenv()
+
+# モデル名（環境変数 OPENAI_MODEL が未設定のときのデフォルト）
+DEFAULT_OPENAI_MODEL = "gpt-5-mini"
 
 
 def _model_name() -> str:
-    return os.environ.get("OPENAI_MODEL", "gpt-5-mini")
+    return os.environ.get("OPENAI_MODEL", DEFAULT_OPENAI_MODEL)
 
 
 def _format_situation(my_situation: MySituation) -> str:
@@ -60,7 +62,6 @@ class PydanticAIGenerateAdapter(GenerateReplyDraftsPort):
                 "返信案は丁寧で実用的な文にし、制約に反しないようにしてください。"
                 "返信案は200文字程度で生成してください。"
                 "出力は必ず drafts に返信案1件のリスト（各要素は text）を含む JSON 形式にすること。"
-                "",
             ),
         )
 
@@ -78,8 +79,11 @@ class PydanticAIGenerateAdapter(GenerateReplyDraftsPort):
         )
         result = self._agent.run_sync(user_prompt)
         output: ReplyDraftsOutput = result.output
-        print(f"generate output: {output}")
-        print(f"generate output.drafts: {output.drafts}")
+        get_ai_mcp_logger().info(
+            "ai_adapter=generate prompt=%s output=%s",
+            user_prompt,
+            output.model_dump_json(),
+        )
         return [ReplyDraft(text=d.text) for d in output.drafts]
 
 
@@ -122,6 +126,11 @@ class PydanticAICheckAdapter(CheckReplyDraftsPort):
         )
         result = self._agent.run_sync(user_prompt)
         output: CheckResultSchema = result.output
+        get_ai_mcp_logger().info(
+            "ai_adapter=check prompt=%s output=%s",
+            user_prompt,
+            output.model_dump_json(),
+        )
         return CheckResult(
             score_1=output.score_1,
             score_2=output.score_2,
@@ -179,6 +188,9 @@ class PydanticAIReviseAdapter(ReviseReplyDraftsPort):
         )
         result = self._agent.run_sync(user_prompt)
         output: ReplyDraftsOutput = result.output
-        print(f"revise output: {output}")
-        print(f"revise output.drafts: {output.drafts}")
+        get_ai_mcp_logger().info(
+            "ai_adapter=revise prompt=%s output=%s",
+            user_prompt,
+            output.model_dump_json(),
+        )
         return [ReplyDraft(text=d.text) for d in output.drafts]

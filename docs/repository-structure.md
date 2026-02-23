@@ -55,10 +55,15 @@ backend/
 │       │   └── ...                     # エンティティ・値オブジェクト等
 │       ├── application/                # アプリケーション層（ユースケース）
 │       │   ├── __init__.py
-│       │   └── ...                     # 返信案生成ユースケース等
+│       │   ├── generate_reply_drafts.py # 返信案生成（生成→チェック→作り直し）
+│       │   ├── get_calendar_situation.py # カレンダーから自分の状況を取得
+│       │   ├── ports.py                 # Port 定義（生成・チェック・作り直し・カレンダー）
+│       │   └── ...                     # その他
 │       ├── infrastructure/             # インフラ層（Adapter）
 │       │   ├── __init__.py
-│       │   └── ...                     # PydanticAI を呼ぶ実装等
+│       │   ├── pydantic_ai_adapters.py # 返信案生成・チェック・作り直しの PydanticAI 実装
+│       │   ├── calendar_mcp_adapter.py # Google Calendar 予定取得（MCP mcp-google）
+│       │   └── ...                     # その他
 │       └── interface/                  # プレゼンテーション層（FastAPI）
 │           ├── __init__.py
 │           ├── routes/                 # ルータ

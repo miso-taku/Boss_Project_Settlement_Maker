@@ -37,17 +37,24 @@ import {
   CopyIcon,
   CheckIcon,
 } from "@chakra-ui/icons";
-import type { ApiError, Priority, ReplyDraftItem } from "../api/types";
+import type {
+  ApiError,
+  Priority,
+  ReplyDraftItem,
+  SituationSource,
+} from "../api/types";
 import { ApiErrorException, generateReplyDrafts } from "../api/replyDrafts";
 
 /**
  * 返信案生成フォームコンポーネント。
  *
- * 依頼文・残り時間・優先度・制約を入力し、返信案を生成・表示・コピーする。
+ * 依頼文・自分の状況（手動入力 or Google Calendar 取得）を入力し、返信案を生成・表示・コピーする。
  * Chakra UI v2を使用してモダンで洗練されたUIを実装。
  */
 export default function ReplyForm() {
   const [requestText, setRequestText] = useState("");
+  const [situationSource, setSituationSource] =
+    useState<SituationSource>("manual");
   const [remainingHours, setRemainingHours] = useState<number | null>(null);
   const [priority, setPriority] = useState<Priority | null>(null);
   const [constraints, setConstraints] = useState("");
@@ -66,12 +73,17 @@ export default function ReplyForm() {
     setReplyDraft(null);
 
     try {
-      const response = await generateReplyDrafts({
+      const payload: Parameters<typeof generateReplyDrafts>[0] = {
         request_text: requestText,
-        remaining_hours: remainingHours ?? undefined,
-        priority: priority ?? undefined,
-        constraints: constraints || undefined,
-      });
+        situation_source: situationSource,
+      };
+      if (situationSource === "manual") {
+        payload.remaining_hours = remainingHours ?? undefined;
+        payload.priority = priority ?? undefined;
+        payload.constraints = constraints || undefined;
+      }
+      // calendar の場合はサーバーで現在日時を使用するため payload に日付は含めない
+      const response = await generateReplyDrafts(payload);
 
       if (response.draft) {
         setReplyDraft(response.draft);
@@ -227,19 +239,74 @@ export default function ReplyForm() {
                 />
               </FormControl>
 
-              <HStack spacing={4} align="flex-start">
-                <FormControl flex="1">
-                  <FormLabel
-                    fontSize="md"
-                    fontWeight="semibold"
-                    color="gray.700"
-                    mb={2}
-                  >
-                    <HStack spacing={2}>
-                      <Icon as={TimeIcon} color="gray.600" />
-                      <Text>残り時間（時間）</Text>
-                    </HStack>
-                  </FormLabel>
+              <FormControl>
+                <FormLabel
+                  fontSize="md"
+                  fontWeight="semibold"
+                  color="gray.700"
+                  mb={2}
+                >
+                  <Text>自分の状況の入力元</Text>
+                </FormLabel>
+                <RadioGroup
+                  value={situationSource}
+                  onChange={(value) =>
+                    setSituationSource(value as SituationSource)
+                  }
+                >
+                  <Stack direction={{ base: "column", md: "row" }} spacing={4}>
+                    <Radio
+                      value="manual"
+                      colorScheme="blue"
+                      size="lg"
+                      _hover={{ transform: "scale(1.02)" }}
+                      transition="transform 0.2s"
+                    >
+                      <Badge colorScheme="blue" variant="subtle" px={2} py={1}>
+                        手動入力
+                      </Badge>
+                    </Radio>
+                    <Radio
+                      value="calendar"
+                      colorScheme="green"
+                      size="lg"
+                      _hover={{ transform: "scale(1.02)" }}
+                      transition="transform 0.2s"
+                    >
+                      <Badge
+                        colorScheme="green"
+                        variant="subtle"
+                        px={2}
+                        py={1}
+                      >
+                        Google Calendar から取得
+                      </Badge>
+                    </Radio>
+                  </Stack>
+                </RadioGroup>
+              </FormControl>
+
+              {situationSource === "calendar" && (
+                <Text fontSize="sm" color="gray.600">
+                  現在の日付・時刻の予定から残り時間と制約を取得します。
+                </Text>
+              )}
+
+              {situationSource === "manual" && (
+                <>
+                  <HStack spacing={4} align="flex-start">
+                    <FormControl flex="1">
+                      <FormLabel
+                        fontSize="md"
+                        fontWeight="semibold"
+                        color="gray.700"
+                        mb={2}
+                      >
+                        <HStack spacing={2}>
+                          <Icon as={TimeIcon} color="gray.600" />
+                          <Text>残り時間（時間）</Text>
+                        </HStack>
+                      </FormLabel>
                   <Input
                     id="remaining-hours"
                     type="number"
@@ -349,6 +416,8 @@ export default function ReplyForm() {
                   transition="all 0.2s"
                 />
               </FormControl>
+                </>
+              )}
 
               <Divider />
 

@@ -8,16 +8,23 @@
 /** 優先度（3段階） */
 export type Priority = "high" | "medium" | "low";
 
+/** 自分の状況の入力元 */
+export type SituationSource = "manual" | "calendar";
+
 /** 返信案生成 API のリクエスト body */
 export interface GenerateReplyDraftsRequest {
   /** 依頼文（必須・非空） */
   request_text: string;
-  /** 残り時間（時間単位）。任意。0以上。 */
+  /** 残り時間（時間単位）。任意。0以上。situation_source=manual 時のみ使用。 */
   remaining_hours?: number | null;
   /** 優先度（high/medium/low）。任意。 */
   priority?: Priority | null;
-  /** 制約（自由文）。任意。空文字可。 */
+  /** 制約（自由文）。任意。空文字可。situation_source=manual 時のみ使用。 */
   constraints?: string;
+  /** 自分の状況の入力元。manual=手動、calendar=Google Calendar から取得。 */
+  situation_source?: SituationSource;
+  /** 対象日（YYYY-MM-DD）。situation_source=calendar 時のみ。省略時は今日。 */
+  calendar_date?: string | null;
 }
 
 /** 返信案 1 件（API レスポンス用） */

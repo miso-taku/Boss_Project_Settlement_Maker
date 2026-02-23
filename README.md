@@ -8,9 +8,11 @@
 
 ## 概要
 
-相手（上司など）の依頼文と、自分の状況（残り時間・優先度・制約）を入力すると、AI が返信案を1件生成します。ユーザーは返信案をコピーしてメール・チャット等で利用できます。
+相手（上司など）の依頼文と、自分の状況を入力すると、AI が返信案を1件生成します。自分の状況は**手動入力**（残り時間・優先度・制約）か**Google Calendar から取得**のいずれかを選べます。ユーザーは返信案をコピーしてメール・チャット等で利用できます。
 
-- **入力**: 依頼文（自由文）、残り時間（数値）、優先度（3段階）、制約（自由文）
+- **入力**: 依頼文（自由文）、自分の状況の入力元（手動 / Google Calendar）
+  - 手動時: 残り時間（数値）、優先度（3段階）、制約（自由文）
+  - カレンダー時: 対象日（省略時は今日）— 予定から残り時間・制約を自動導出
 - **出力**: 返信案1件（角の立たない断り・代替案・確認質問・次の一手を含む）
 - **利用形態**: デモアプリ（認証なし）
 
@@ -21,6 +23,20 @@
 本アプリは、**複数のAIエージェント**を組み合わせて返信案の品質を高めます。
 
 ### 処理フロー
+
+自分の状況の入力元が**Google Calendar**の場合は、返信案生成の前に **MCP サーバー（mcp-google）** でスケジュールを取得し、そこから「自分の状況」（残り時間・制約）を導出してから、同じエージェントフローに渡します。
+
+```mermaid
+flowchart LR
+    subgraph カレンダー取得時
+        K[対象日] --> M[MCP サーバー<br/>mcp-google]
+        M --> N[Google Calendar API<br/>予定取得]
+        N --> O[残り時間・制約の導出]
+        O --> P[自分の状況]
+    end
+```
+
+上記で導出した「自分の状況」を、下図の「依頼文＋自分の状況」として返信案生成エージェントへ渡す。
 
 ```mermaid
 flowchart TD
@@ -40,6 +56,9 @@ flowchart TD
     style H fill:#ffe1f5
     style F fill:#e1ffe1
 ```
+
+- **カレンダー取得時**: バックエンドが MCP（`MCPServerStdio`）で mcp-google を起動し、`list-calendars` でタスク用カレンダーを特定、`list-events` で対象日の予定を取得。業務時間（9:00–18:00 JST）から予定を差し引いて残り時間を算出し、予定名と時間帯から制約文を組み立て、その「自分の状況」を返信案生成エージェントへ渡す。
+- **手動入力時**: ユーザーが入力した残り時間・優先度・制約をそのまま「自分の状況」として返信案生成に渡す。
 
 ### エージェントの役割
 
@@ -75,8 +94,9 @@ flowchart TD
 ## 前提条件
 
 - **Python 3.x** — バックエンド用（[uv](https://docs.astral.sh/uv/) 推奨）
-- **Node.js** — フロントエンド用（npm / pnpm / yarn のいずれか）
+- **Node.js** — フロントエンド用・およびバックエンドの Google Calendar MCP（mcp-google）用（npm / pnpm / yarn のいずれか）
 - **OpenAI API キー** — 環境変数で設定（後述）
+- **Google Calendar 利用時**: Google Cloud で OAuth 2.0 クライアント ID（デスクトップアプリ）を取得し、環境変数に設定（後述）。初回のみブラウザで認証が必要です。
 
 ---
 
@@ -134,7 +154,18 @@ npm run dev   # Next.js 開発サーバ起動（next dev）
   # Linux/Mac
   export OPENAI_API_KEY="your-api-key"
   ```
-- **OPENAI_MODEL** — 使用する OpenAI モデル（任意、デフォルト: `gpt-4o-mini`）
+- **OPENAI_MODEL** — 使用する OpenAI モデル（任意、デフォルト: `gpt-5-mini`）
+- **GOOGLE_CLIENT_ID** / **GOOGLE_CLIENT_SECRET** — Google Calendar から予定を取得する場合に必要。`.env` に設定すると、MCP（mcp-google）のサブプロセスに渡されます。初回利用時はブラウザで Google アカウントの認証が必要です。
+
+  **MCP 認証で 403: access_denied が出る場合**（主な対処）:
+  1. **テストユーザーの追加**（最も多い原因）  
+     [Google Cloud Console](https://console.cloud.google.com/) → 「APIとサービス」→「OAuth同意画面」→「テストユーザー」で **認証に使う Google アカウントのメールアドレスを追加**する。アプリが「テスト」の間は、ここに追加したアカウントだけがログインできます。
+  2. **OAuth クライアントの種類**  
+     「認証情報」で作成したクライアントが **「デスクトップアプリ」** であることを確認する（「ウェブアプリケーション」だと 403 になる場合があります）。
+  3. **リダイレクト URI**  
+     mcp-google は `http://localhost:3000/oauth2callback` を使うため、デスクトップアプリの場合は通常は自動。問題が続く場合は認証情報の「承認済みのリダイレクト URI」に上記を追加して試す。
+  4. **有効な API**  
+     「APIとサービス」→「ライブラリ」で **Google Calendar API**（および mcp-google が求める場合は People API 等）が有効か確認する。
 
 #### フロントエンド
 
@@ -144,8 +175,11 @@ npm run dev   # Next.js 開発サーバ起動（next dev）
 ### API エンドポイント
 
 - **POST /api/v1/reply-drafts** — 返信案生成
-  - リクエスト: `{ "request_text": string, "remaining_hours": number?, "priority": "high"|"medium"|"low"?, "constraints": string? }`
+  - リクエスト（共通）: `request_text`（必須）
+  - 手動入力時: `situation_source: "manual"`（省略可）、`remaining_hours`, `priority`, `constraints`
+  - カレンダー取得時: `situation_source: "calendar"`, `calendar_date`（YYYY-MM-DD、省略時は今日）
   - レスポンス: `{ "draft": { "text": string } }`
+  - 詳細は [architecture.md](docs/architecture.md) の「3.3 API 契約」を参照
 
 ---
 

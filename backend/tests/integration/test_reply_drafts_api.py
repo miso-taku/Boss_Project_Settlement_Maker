@@ -3,16 +3,35 @@
 TDD: テストで期待を固定し、Port は Depends で注入（テスト時はモックに差し替え）。
 """
 
+from datetime import date
+
 import pytest
 from fastapi.testclient import TestClient
 
 from settlement_maker.domain.models import CheckResult, MySituation, ReplyDraft, RequestText
 from settlement_maker.interface.app import app
 from settlement_maker.interface.routes.reply_drafts import (
+    get_calendar_port,
     get_check_port,
     get_generate_port,
     get_revise_port,
 )
+
+
+class MockCalendarPort:
+    """カレンダー予定取得を固定の MySituation で返すモック。"""
+
+    async def get_my_situation_for_date(self, target_date: date) -> MySituation:
+        return MySituation(
+            remaining_hours=5.0,
+            priority=None,
+            constraints="10:00–11:00 定例\n14:00–15:00 打ち合わせ",
+        )
+
+
+def _sync_mock_calendar_port():
+    """TestClient 用に同期的にモックを返す（get_calendar_port は同じインスタンスを返す）。"""
+    return MockCalendarPort()
 
 
 class MockGeneratePort:
@@ -57,6 +76,7 @@ def client_with_mock_ports():
     app.dependency_overrides[get_generate_port] = lambda: MockGeneratePort()
     app.dependency_overrides[get_check_port] = lambda: MockCheckPort()
     app.dependency_overrides[get_revise_port] = lambda: MockRevisePort()
+    app.dependency_overrides[get_calendar_port] = _sync_mock_calendar_port
     try:
         with TestClient(app) as c:
             yield c
@@ -146,3 +166,18 @@ def test_options_reply_drafts_returns_200(client_with_mock_ports):
     assert response.status_code == 200
     assert "access-control-allow-origin" in response.headers
     assert response.headers["access-control-allow-origin"] == "http://localhost:3000"
+
+
+def test_post_reply_drafts_situation_source_calendar_returns_200(client_with_mock_ports):
+    """situation_source=calendar のとき現在日付でカレンダー Port を呼び返信案が返る。"""
+    response = client_with_mock_ports.post(
+        "/api/v1/reply-drafts",
+        json={
+            "request_text": "今日中にお願いします",
+            "situation_source": "calendar",
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "draft" in data
+    assert data["draft"]["text"] == "返信案です。"

@@ -46,18 +46,28 @@
 - **エンドポイント**: `POST /api/v1/reply-drafts`（確定）
 - **リクエスト**（JSON body）
   - `request_text`: 依頼文（文字列・必須・非空）
-  - `remaining_hours`: 残り時間（数値・任意・0以上）
+  - `situation_source`: 自分の状況の入力元（"manual" | "calendar"・任意・デフォルト "manual"）
+  - `calendar_date`: 対象日（"YYYY-MM-DD"・任意）。`situation_source=calendar` のときのみ使用。省略時は今日。
+  - `remaining_hours`: 残り時間（数値・任意・0以上）。`situation_source=manual` 時のみ使用。
   - `priority`: 優先度（"high" | "medium" | "low"・任意）
-  - `constraints`: 制約（文字列・任意・空文字可）
+  - `constraints`: 制約（文字列・任意・空文字可）。`situation_source=manual` 時のみ使用。
 - **レスポンス**（200）
   - `draft`: 返信案 1 件（`{ "text": string }`）
-- **エラー**: ValidationError は 422 で統一。
+- **エラー**: ValidationError は 422 で統一。カレンダー取得失敗時は 503 を返す場合あり。
 
 ### 3.4 AI 呼び出し（PydanticAI）
 
 - バックエンドの AI 呼び出しは **PydanticAI** で実装する。
 - モデルは gpt-5-mini（または API 仕様に合わせた同等モデル）。各エージェントで共通または個別に指定可能とする。
 - OpenAI API キーは環境変数で注入（コードに埋め込まない）。
+
+### 3.4.1 Google Calendar 予定取得（MCP）
+
+- 自分の状況を **Google Calendar から取得**する場合は、**MCP**（Model Context Protocol）を用いる。
+- **Pydantic AI の MCPServerStdio** で **mcp-google**（`npx -y mcp-google`）に接続する。環境変数 `GOOGLE_CLIENT_ID` と `GOOGLE_CLIENT_SECRET` を .env に設定し、MCP サブプロセスに渡す。
+- 予定取得は `list-events` ツールを direct_call_tool で呼び出し、結果から以下を導出する。
+  - **残り時間**: 業務時間を固定 9:00–18:00（9時間）とし、取得した予定の合計時間を引いた空き時間。
+  - **制約**: 予定を「HH:MM–HH:MM 予定名」形式で改行連結した文字列。カレンダー取得時は優先度は未設定（None）。
 
 ### 3.5 複数エージェントの組み合わせ（生成→チェック→作り直し）
 
@@ -134,6 +144,12 @@ flowchart TD
 - **BE**: Python 3.x、uv で依存管理・実行（`uv sync`, `uv run ...`）。pytest でテスト。
 - **FE**: Node.js、package.json の scripts を優先。Next.js の場合は `npm run dev`（`next dev`）、`npm run build`（`next build`）等、Next.js 標準の scripts に従う。lockfile に従う。
 - **環境変数**: OpenAI API キー等は環境変数で渡す。
+
+### 3.6 AI/MCP 入出力ログ
+
+- デバッグ・監査・品質改善のため、AI エージェント（生成・チェック・作り直し）のプロンプトと出力、および MCP（list-calendars / list-events）の呼び出し引数と取得結果を専用ログファイルに記録する。
+- 専用ロガー名は `settlement_maker.ai_mcp`。ログファイルパスは環境変数 `AI_MCP_LOG_PATH` で指定（未設定時は `ai_mcp.log`）。Python 標準の `logging` と `FileHandler` を使用する。
+- 記録は Infrastructure 層（pydantic_ai_adapters, calendar_mcp_adapter）で行い、API 契約は変更しない。
 
 ---
 

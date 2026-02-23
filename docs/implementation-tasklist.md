@@ -9,24 +9,24 @@
 
 | 項目 | 数 |
 |------|-----|
-| **総タスク数** | 27 |
-| **完了** | 22 |
+| **総タスク数** | 30 |
+| **完了** | 25 |
 | **進行中** | 0 |
 | **未着手** | 5 |
-| **進捗率** | 81% (22/27) |
+| **進捗率** | 83% (25/30) |
 
 ### セクション別進捗
 
 | セクション | 完了 | 進行中 | 未着手 | 合計 | 進捗率 |
 |------------|------|--------|--------|------|--------|
 | 1. ドキュメント整備 | 2 | 0 | 0 | 2 | 100% |
-| 2. バックエンド | 7 | 0 | 1 | 8 | 88% |
+| 2. バックエンド | 9 | 0 | 0 | 9 | 100% |
 | 3. フロントエンド | 7 | 0 | 0 | 7 | 100% |
 | 4. 結合・統合 | 2 | 0 | 0 | 2 | 100% |
 | 5. 振り返り・ドキュメント最終更新 | 0 | 0 | 2 | 2 | 0% |
-| 6. 仕様変更 | 3 | 0 | 0 | 3 | 100% |
+| 6. 仕様変更 | 4 | 0 | 0 | 4 | 100% |
 
-*最終更新: 2026-02-11（S3 完了）。タスク完了・ステータス変更のたびに上記数値を更新すること。*
+*最終更新: 2026-02-23（B10 バックエンド AI/MCP ログ出力完了）。タスク完了・ステータス変更のたびに上記数値を更新すること。*
 
 ---
 
@@ -51,6 +51,8 @@
 | B6 | FastAPI ルータ・DTO・入力検証（POST 返信案生成 API） | 完了 | 2025-02-08 | interface/dto/reply_drafts.py, interface/routes/reply_drafts.py, interface/app.py |
 | B7 | ドメイン / アプリケーション / API のテスト | 完了 | 2025-02-08 | tests/unit/domain（CheckResult 追加）, tests/unit/application（generate_reply_drafts）, tests/integration 維持 |
 | B8 | lint/format（ruff, mypy 等） | 完了 | 2025-02-08 | backend で uv run ruff check . / ruff format . / mypy . 通過。pyproject.toml 既存設定のまま。 |
+| B9 | バックエンド Tidy-First リファクタリング | 完了 | 2026-02-23 | .cursor/refactoring-tidy-first に従い挙動不変で整頓。読む順番・デッドコード削除・説明定数等。.steering/20260223-refactoring-tidy-first |
+| B10 | バックエンド AI/MCP ログ出力 | 完了 | 2026-02-23 | Infrastructure 層で AI エージェントの入出力と MCP 取得内容を専用ログファイルに記録。ai_mcp_logging.py、pydantic_ai_adapters・calendar_mcp_adapter にログ追加。.steering/20260223-backend-ai-mcp-logging |
 
 ---
 
@@ -93,11 +95,14 @@
 | S1 | 返信案を1案に絞る（仕様変更） | 完了 | 2025-02-08 | 永続ドキュメント・BEプロンプト・テストを「1案」に統一。.steering/20250208-reply-draft-single |
 | S2 | 返信案チェックを10点満点×3項目・全て8以上でOKに変更 | 完了 | 2025-02-08 | Domain CheckResult に score_1/2/3 追加、ok は派生。チェックエージェント・ドキュメント更新。.steering/20250208-reply-check-10point-scoring |
 | S3 | APIレスポンスを draft 単数に・チェック出力を must_fix/nice_to_have に・score_sum 改善なしでループ終了 | 完了 | 2026-02-11 | レスポンスを draft: { text } に変更。CheckResult を must_fix/nice_to_have に変更。max_revise_rounds=2 に加え score_sum が改善しない場合は終了。.steering/20260211-response-single-and-check-improvement |
+| S4 | Google Calendar MCP で予定取得・手動/カレンダー選択 | 完了 | 2026-02-22 | 入力ソース（manual/calendar）と calendar_date を API に追加。BE で MCPServerStdio＋mcp-google により list-events で予定取得し、残り時間・制約を導出。FE で入力元選択と対象日入力 UI を追加。.steering/20260222-google-calendar-mcp |
 
 ---
 
 ## 更新履歴
 
+- 2026-02-23: B10 完了（バックエンド AI/MCP ログ出力）。Infrastructure 層で AI のプロンプト・出力と MCP のツール名・引数・取得結果を専用ログファイルに記録。ai_mcp_logging.py 新規、pydantic_ai_adapters.py・calendar_mcp_adapter.py にログ追加。tests/unit/infrastructure にテスト追加。.steering/20260223-backend-ai-mcp-logging。uv run pytest -q で 35 テスト通過。
+- 2026-02-23: B9 完了（バックエンド Tidy-First リファクタリング）。.cursor/refactoring-tidy-first に従い挙動不変で整頓。interface/routes/reply_drafts.py（定数・インポート順）、infrastructure/pydantic_ai_adapters.py（print 削除・説明定数）、infrastructure/calendar_mcp_adapter.py（print 削除）、.steering/20260223-refactoring-tidy-first。uv run pytest -q で 31 テスト通過。
 - 2026-02-11: S3 完了（APIレスポンス単数化・チェック must_fix/nice_to_have・score_sum 改善なしでループ終了）。レスポンスを draft: { text } に変更。CheckResult を must_fix/nice_to_have に変更。generate_reply_drafts で score_sum が改善しない場合はループ終了。architecture, functional-design, glossary を更新。実装サマリー・セクション6を更新。
 - 2026-02-11: I1, I2 完了（結合・統合の動作確認）。FE-BE 結合動作確認および product-requirements 4.1〜4.3 の受け入れ条件確認を完了。実装サマリー・セクション別進捗を更新。
 - 2026-02-09: F7 完了（lint/format）。Prettier導入・設定完了（`.prettierrc`, `.prettierignore`作成、`package.json`にprettier/eslint-config-prettier追加、format/format:check/type-checkスクリプト追加）。ESLint実行: ✔ No ESLint warnings or errors。TypeScript型チェック: 通過（`npx tsc --noEmit`）。npm install実行後、`npm run format`でフォーマット適用可能。実装サマリー・セクション別進捗を更新。

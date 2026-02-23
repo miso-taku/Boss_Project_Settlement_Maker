@@ -9,6 +9,7 @@ from typing import Literal
 from pydantic import BaseModel, Field, model_validator
 
 PriorityLiteral = Literal["high", "medium", "low"]
+SituationSourceLiteral = Literal["manual", "calendar"]
 
 
 class GenerateReplyDraftsRequest(BaseModel):
@@ -18,13 +19,24 @@ class GenerateReplyDraftsRequest(BaseModel):
     remaining_hours: float | None = Field(
         default=None,
         ge=0,
-        description="残り時間（時間単位）。任意。0以上。",
+        description="残り時間（時間単位）。任意。0以上。situation_source=manual 時のみ使用。",
     )
     priority: PriorityLiteral | None = Field(
         default=None,
         description="優先度（high/medium/low）。任意。",
     )
-    constraints: str = Field(default="", description="制約（自由文）。任意。空文字可。")
+    constraints: str = Field(
+        default="",
+        description="制約（自由文）。任意。situation_source=manual 時のみ使用。",
+    )
+    situation_source: SituationSourceLiteral = Field(
+        default="manual",
+        description="自分の状況の入力元。manual=手動入力、calendar=Google Calendar から取得。",
+    )
+    calendar_date: str | None = Field(
+        default=None,
+        description="対象日（YYYY-MM-DD）。situation_source=calendar 時のみ。省略時は今日。",
+    )
 
     @model_validator(mode="after")
     def strip_request_text(self) -> "GenerateReplyDraftsRequest":
